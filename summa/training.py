@@ -3,6 +3,7 @@ import jax.numpy as jnp
 import optax
 from typing import Callable, Optional
 from jax._src.typing import Array
+from summa.models import FeatureNet, NAM
 
 
 def get_optimal_params(model,
