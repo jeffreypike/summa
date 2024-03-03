@@ -16,7 +16,7 @@ def get_optimal_params(model,
                        rngs: dict,
                        hyperparams: Optional[dict] = None,
                        X_test: Optional[Array] = None,
-                       y_test: Optional[Array] = None) -> optax.Params:
+                       y_test: Optional[Array] = None) -> tuple[optax.Params, dict]:
     '''Train a model'''
     def l2_loss(X, weight_decay):
         return weight_decay * (X ** 2).mean()
@@ -35,7 +35,7 @@ def get_optimal_params(model,
             for j in range(len(model.hidden_units)):
                 subnet = list(params['params'].keys())[j]
                 params_subnet = {'params': params['params'][subnet]}
-                y = FeatureNet(nam.hidden_units[j]).apply(params_subnet, X_batch[:, j].reshape(100,1))
+                y = FeatureNet(model.hidden_units[j]).apply(params_subnet, X_batch[:, j].reshape(100,1))
                 loss += output_penalty * jnp.sum(y**2)
         return loss
     
@@ -53,7 +53,6 @@ def get_optimal_params(model,
     history = []
     best_loss = jnp.inf
     best_params = params
-    val_loss = None
     val_history = []
     
     for j in range(epochs):
@@ -69,8 +68,8 @@ def get_optimal_params(model,
             if loss_value < best_loss:
                 best_loss = loss_value
                 best_params = params
-            if X_test is not None:
-                val_loss = loss(params, X_test, y_test)
+        if X_test is not None and y_test is not None:
+            val_history.append(loss(params, X_test, y_test))
         if j % 100 == 0:
             print(f'step {j}, loss: {loss_value}')
         history.append(loss_value)
