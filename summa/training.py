@@ -1,17 +1,9 @@
-import polars as pl
 import jax
 import jax.numpy as jnp
-import numpy as np
-import flax
-from flax import linen as nn
 import optax
-import plotly.express as px
-import plotly.graph_objects as go
-from typing import Callable, Sequence, Optional
+from typing import Callable, Optional
 from jax._src.typing import Array
-from jax._src.nn.initializers import Initializer, KeyArray, DTypeLikeInexact, RealNumeric
-from jax._src import core
-from jax._src import dtypes
+
 
 def get_optimal_params(model,
                        params: optax.Params,
