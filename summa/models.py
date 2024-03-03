@@ -3,8 +3,8 @@ import jax.numpy as jnp
 from flax import linen as nn
 from typing import Optional, Sequence
 from jax._src.typing import Array
-from layers import ExuLayer
-from utils import mish
+from summa.layers import ExuLayer
+from summa.utils import mish
 
 class FeatureNet(nn.Module):
     hidden_units: int

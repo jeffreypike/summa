@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from flax import linen as nn
 from typing import Callable
-from utils import shifted_truncated_normal
+from summa.utils import shifted_truncated_normal
 
 class ExuLayer(nn.Module):
     features: int
