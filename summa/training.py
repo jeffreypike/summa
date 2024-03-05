@@ -47,7 +47,7 @@ def get_optimal_params(model,
                        y_test: Optional[Array] = None) -> tuple[optax.Params, dict]:
     '''Train a model'''
 
-    loss = (lambda params, X_batch, y_batch: get_penalized_loss(model, params, loss_fn, hyperparams, X_Batch, y_batch))
+    loss = (lambda params, X_batch, y_batch: get_penalized_loss(model, params, loss_fn, hyperparams, X_batch, y_batch))
 
     # weight_decay = 0. if hyperparams is None or 'weight_decay' not in hyperparams else hyperparams['weight_decay']
     # output_penalty = 0. if hyperparams is None or 'output_penalty' not in hyperparams else hyperparams['output_penalty']
