@@ -20,7 +20,8 @@ def subnet_output_loss(model, params, X, output_penalty):
     return output
 
 def get_penalized_loss(model, params, loss_fn, hyperparams, X_batch, y_batch):
-    loss = loss_fn(params, X_batch, y_batch)
+    y_hat = model.applY(params, X_batch)
+    loss = loss_fn(y_batch, y_hat)
 
     # add L2 weight penalty
     if hyperparams is not None and 'weight_decay' in hyperparams:
