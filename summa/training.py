@@ -32,6 +32,7 @@ def construct_loss_function(model, params, loss_fn, hyperparams):
         loss = (lambda params, X_batch, y_batch: loss(params, X_batch, y_batch)
                                                 + subnet_output_loss(model, params, X_batch, y_batch, hyperparams['output_penalty']))
 
+    return loss
 
 # Training
 
