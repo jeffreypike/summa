@@ -24,7 +24,7 @@ def get_penalized_loss(model, params, loss_fn, hyperparams, X_batch, y_batch):
 
     # add L2 weight penalty
     if hyperparams is not None and 'weight_decay' in hyperparams:
-        loss += sum([l2_loss(weight, hyperparams['weight_decay']) for weight in jax.tree_util.tree_leaves(params)]))
+        loss += sum([l2_loss(weight, hyperparams['weight_decay']) for weight in jax.tree_util.tree_leaves(params)])
 
     # add subnet output penalty
     if hyperparams is not None and 'output_penalty' in hyperparams:
