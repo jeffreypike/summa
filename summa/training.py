@@ -5,6 +5,35 @@ from typing import Callable, Optional
 from jax._src.typing import Array
 from summa.models import FeatureNet, NAM
 
+# Losses
+
+def l2_loss(X, weight_decay):
+    return weight_decay * (X ** 2).mean()
+
+def subnet_output_loss(model, params, X, y, output_penalty):
+    output = 0
+    for j in range(len(model.hidden_units)):
+        subnet = list(params['params'].keys())[j]
+        params_subnet = {'params': params['params'][subnet]}
+        y = FeatureNet(model.hidden_units[j]).apply(params_subnet, X_batch[:, j].reshape(100,1))
+        output += output_penalty * jnp.sum(y**2)
+    return output
+
+def construct_loss_function(model, params, loss_fn, hyperparams):
+    loss = loss_fn
+
+    # add L2 weight penalty
+    if hyperparams is not None and 'weight_decay' in hyperparams:
+        loss = lambda(params, X_batch, y_batch: loss(params, X_batch, y_batch) 
+                                                + sum([l2_loss(weight, hyperparams['weight_decay']) for weight in jax.tree_util.tree_leaves(params)]))
+
+    # add subnet output penalty
+    if hyperparams is not None and 'output_penalty' in hyperparams:
+        loss = lambda(params, X_batch, y_batch: loss(params, X_batch, y_batch)
+                                                + subnet_output_loss(model, params, X_batch, y_batch, hyperparams['output_penalty']))
+
+
+# Training
 
 def get_optimal_params(model,
                        params: optax.Params,
@@ -18,26 +47,26 @@ def get_optimal_params(model,
                        X_test: Optional[Array] = None,
                        y_test: Optional[Array] = None) -> tuple[optax.Params, dict]:
     '''Train a model'''
-    def l2_loss(X, weight_decay):
-        return weight_decay * (X ** 2).mean()
 
-    weight_decay = 0. if hyperparams is None or 'weight_decay' not in hyperparams else hyperparams['weight_decay']
-    output_penalty = 0. if hyperparams is None or 'output_penalty' not in hyperparams else hyperparams['output_penalty']
+    loss = construct_loss_function(model, params, loss_fn, hyperparams)
+
+    # weight_decay = 0. if hyperparams is None or 'weight_decay' not in hyperparams else hyperparams['weight_decay']
+    # output_penalty = 0. if hyperparams is None or 'output_penalty' not in hyperparams else hyperparams['output_penalty']
     
-    def loss(params, X_batch, y_batch):
-        pred = model.apply(params, 
-                           X_batch, 
-                           hyperparams,
-                           rngs = rngs)
-        loss = jnp.mean(loss_fn(pred, y_batch))
-        loss += sum([l2_loss(weight, weight_decay) for weight in jax.tree_util.tree_leaves(params)])
-        if type(model) == NAM:
-            for j in range(len(model.hidden_units)):
-                subnet = list(params['params'].keys())[j]
-                params_subnet = {'params': params['params'][subnet]}
-                y = FeatureNet(model.hidden_units[j]).apply(params_subnet, X_batch[:, j].reshape(100,1))
-                loss += output_penalty * jnp.sum(y**2)
-        return loss
+    # def loss(params, X_batch, y_batch):
+    #     pred = model.apply(params, 
+    #                        X_batch, 
+    #                        hyperparams,
+    #                        rngs = rngs)
+    #     loss = jnp.mean(loss_fn(pred, y_batch))
+    #     loss += sum([l2_loss(weight, weight_decay) for weight in jax.tree_util.tree_leaves(params)])
+    #     if type(model) == NAM:
+    #         for j in range(len(model.hidden_units)):
+    #             subnet = list(params['params'].keys())[j]
+    #             params_subnet = {'params': params['params'][subnet]}
+    #             y = FeatureNet(model.hidden_units[j]).apply(params_subnet, X_batch[:, j].reshape(100,1))
+    #             loss += output_penalty * jnp.sum(y**2)
+    #     return loss
     
     @jax.jit
     def step(params, opt_state, X_batch, y_batch):

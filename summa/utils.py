@@ -25,4 +25,3 @@ def shifted_truncated_normal(mean: RealNumeric = 4,
         dtype = dtypes.canonicalize_dtype(dtype)
         return jax.random.truncated_normal(key, lower, upper, shape, dtype) * stddev + mean
     return init
-
