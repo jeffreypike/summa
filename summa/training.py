@@ -24,12 +24,12 @@ def construct_loss_function(model, params, loss_fn, hyperparams):
 
     # add L2 weight penalty
     if hyperparams is not None and 'weight_decay' in hyperparams:
-        loss = lambda(params, X_batch, y_batch: loss(params, X_batch, y_batch) 
+        loss = (lambda params, X_batch, y_batch: loss(params, X_batch, y_batch) 
                                                 + sum([l2_loss(weight, hyperparams['weight_decay']) for weight in jax.tree_util.tree_leaves(params)]))
 
     # add subnet output penalty
     if hyperparams is not None and 'output_penalty' in hyperparams:
-        loss = lambda(params, X_batch, y_batch: loss(params, X_batch, y_batch)
+        loss = (lambda params, X_batch, y_batch: loss(params, X_batch, y_batch)
                                                 + subnet_output_loss(model, params, X_batch, y_batch, hyperparams['output_penalty']))
 
 
