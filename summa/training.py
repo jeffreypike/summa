@@ -19,20 +19,16 @@ def subnet_output_loss(model, params, X, output_penalty):
         output += output_penalty * jnp.sum(y**2)
     return output
 
-def construct_loss_function(model, params, loss_fn, hyperparams):
-    loss = loss_fn
+def get_penalized_loss(model, params, loss_fn, hyperparams, X_batch, y_batch):
+    loss = loss_fn(params, X_batch, y_batch)
 
     # add L2 weight penalty
     if hyperparams is not None and 'weight_decay' in hyperparams:
-        new_loss = (lambda params, X_batch, y_batch: loss(params, X_batch, y_batch) 
-                                                + sum([l2_loss(weight, hyperparams['weight_decay']) for weight in jax.tree_util.tree_leaves(params)]))
-        loss = new_loss
+        loss += sum([l2_loss(weight, hyperparams['weight_decay']) for weight in jax.tree_util.tree_leaves(params)]))
 
     # add subnet output penalty
     if hyperparams is not None and 'output_penalty' in hyperparams:
-        new_loss = (lambda params, X_batch, y_batch: loss(params, X_batch, y_batch)
-                                                + subnet_output_loss(model, params, X_batch, hyperparams['output_penalty']))
-        loss = new_loss
+        loss += subnet_output_loss(model, params, X_batch, hyperparams['output_penalty'])
 
     return loss
 
@@ -51,7 +47,7 @@ def get_optimal_params(model,
                        y_test: Optional[Array] = None) -> tuple[optax.Params, dict]:
     '''Train a model'''
 
-    loss = construct_loss_function(model, params, loss_fn, hyperparams)
+    loss = (lambda params, X_batch, y_batch: get_penalized_loss(model, params, loss_fn, hyperparams, X_Batch, y_batch))
 
     # weight_decay = 0. if hyperparams is None or 'weight_decay' not in hyperparams else hyperparams['weight_decay']
     # output_penalty = 0. if hyperparams is None or 'output_penalty' not in hyperparams else hyperparams['output_penalty']
