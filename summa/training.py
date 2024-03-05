@@ -10,7 +10,7 @@ from summa.models import FeatureNet, NAM
 def l2_loss(X, weight_decay):
     return weight_decay * (X ** 2).mean()
 
-def subnet_output_loss(model, params, X, output_penalty):
+def subnet_output_loss(model, params, X_batch, output_penalty):
     output = 0
     for j in range(len(model.hidden_units)):
         subnet = list(params['params'].keys())[j]
