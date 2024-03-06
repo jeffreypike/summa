@@ -19,8 +19,8 @@ def subnet_output_loss(model, params, X_batch, output_penalty):
         output += output_penalty * jnp.sum(y**2)
     return output
 
-def get_penalized_loss(model, params, loss_fn, hyperparams, X_batch, y_batch):
-    y_hat = model.apply(params, X_batch)
+def get_penalized_loss(model, params, loss_fn, hyperparams, rngs, X_batch, y_batch):
+    y_hat = model.apply(params, X_batch, hyperparams, rngs)
     loss = loss_fn(y_batch, y_hat)
 
     # add L2 weight penalty
@@ -48,7 +48,7 @@ def get_optimal_params(model,
                        y_test: Optional[Array] = None) -> tuple[optax.Params, dict]:
     '''Train a model'''
 
-    loss = (lambda params, X_batch, y_batch: get_penalized_loss(model, params, loss_fn, hyperparams, X_batch, y_batch))
+    loss = (lambda params, X_batch, y_batch: get_penalized_loss(model, params, loss_fn, hyperparams, rngs, X_batch, y_batch))
 
     # weight_decay = 0. if hyperparams is None or 'weight_decay' not in hyperparams else hyperparams['weight_decay']
     # output_penalty = 0. if hyperparams is None or 'output_penalty' not in hyperparams else hyperparams['output_penalty']
