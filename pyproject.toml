@@ -9,6 +9,12 @@ packages = [{include = "summa"}]
 [tool.poetry.dependencies]
 python = "^3.10.0"
 flax = "^0.8.4"
+polars-lts-cpu = "^1.2.0"
+plotly = "^5.22.0"
+nbformat = "^5.10.4"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
 
 [build-system]
 requires = ["poetry-core"]
