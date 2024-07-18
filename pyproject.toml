@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "summa"
+version = "0.1.0"
+description = "Additive Modeling in Python"
+authors = ["Jeffrey Pike <jeffreypike.ai@gmail.com>"]
+readme = "README.md"
+packages = [{include = "summa"}]
+
+[tool.poetry.dependencies]
+python = "^3.10.0"
+flax = "^0.8.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
