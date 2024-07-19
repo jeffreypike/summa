@@ -1,7 +1,7 @@
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Literal
 from jax._src.typing import Array
 from summa.layers import ExuLayer
 from summa.utils import mish
@@ -31,6 +31,7 @@ class FeatureNet(nn.Module):
 class NAM(nn.Module):
     hidden_units: Sequence[int]
     rng_collection: str = 'feature_dropout'
+    task: Literal["regression", "classification"] = "regression"
     
     def setup(self):
         self.subnets = [FeatureNet(units) for units in self.hidden_units]
@@ -40,18 +41,21 @@ class NAM(nn.Module):
                  hyperparams: Optional[dict] = None):
         '''Evaluates the NAM'''
         feature_dropout_rate = 0. if hyperparams is None or 'feature_dropout_rate' not in hyperparams else hyperparams['feature_dropout_rate']
-        output = 0
+        subnet_output = jnp.zeros(shape = (X.shape[0], len(self.subnets)))
         for i, subnet in enumerate(self.subnets):
             xi = X[:, i].reshape(X.shape[0], 1)
             
             if not feature_dropout_rate:
-                output += subnet(xi, hyperparams)
+                subnet_output = subnet_output.at[:, i].set(subnet(xi, hyperparams).flatten())
             
             else:
                 random_key = self.make_rng(self.rng_collection)
                 rng = jax.random.uniform(random_key)
-
-                output += jax.lax.select((rng > feature_dropout_rate), 
-                                         subnet(xi, hyperparams),
-                                         jnp.zeros_like(xi))
+                subnet_output = subnet_output.at[:, i].set(jax.lax.select((rng > feature_dropout_rate), 
+                                                                           subnet(xi, hyperparams).flatten(),
+                                                                           jnp.zeros_like(xi)))
+        
+        output = subnet_output.sum(axis = 1)
+        if self.task == "classification":
+            output = nn.log_softmax(output)
         return output
