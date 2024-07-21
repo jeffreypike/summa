@@ -31,7 +31,6 @@ class FeatureNet(nn.Module):
 class NAM(nn.Module):
     hidden_units: Sequence[int]
     rng_collection: str = 'feature_dropout'
-    task: Literal["regression", "classification"] = "regression"
     
     def setup(self):
         self.subnets = [FeatureNet(units) for units in self.hidden_units]
@@ -56,6 +55,4 @@ class NAM(nn.Module):
                                                                            jnp.zeros_like(xi)))
         
         output = subnet_output.sum(axis = 1)
-        if self.task == "classification":
-            output = nn.log_softmax(output)
         return output

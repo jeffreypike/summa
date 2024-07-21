@@ -5,6 +5,6 @@ Summa is a package built on [Flax](https://github.com/google/flax) that is tailo
 - [x] Implement Exu layers and 1D Feature Networks
 - [x] Add NAM regressor class and basic training function
 - [x] Integrate regularization (dropout, feature dropout, output penalty)
-- [ ] Support classification
+- [x] Add classification example to starter notebook
 - [ ] Improve customizability (custom activation functions, feature network depths)
 - [ ] Add support for discrete inputs and polars
